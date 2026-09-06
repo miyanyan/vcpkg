@@ -41,7 +41,7 @@ if(CMAKE_HOST_WIN32) # WIN32 HOST probably has win_flex and win_bison!
     endif()
 endif()
 
-# For features https://github.com/pal1000/mesa-dist-win should be probably studied a bit more. 
+# For features https://github.com/pal1000/mesa-dist-win should be probably studied a bit more.
 list(APPEND MESA_OPTIONS -Dzstd=enabled)
 list(APPEND MESA_OPTIONS -Dvalgrind=disabled)
 list(APPEND MESA_OPTIONS -Dshared-llvm=disabled)
@@ -111,6 +111,8 @@ if(VCPKG_TARGET_IS_WINDOWS)
         set(VCPKG_CXX_FLAGS "/D_CRT_DECLARE_NONSTDC_NAMES ${VCPKG_CXX_FLAGS}")
         set(VCPKG_C_FLAGS "/D_CRT_DECLARE_NONSTDC_NAMES ${VCPKG_C_FLAGS}")
     endif()
+elseif(VCPKG_TARGET_IS_ANDROID)
+    list(APPEND MESA_OPTIONS -Dplatforms=['android'])
 endif()
 
 vcpkg_configure_meson(

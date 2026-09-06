@@ -56,7 +56,8 @@
     {
       "name": "vcpkg-cmake-config",
       "host": true
-    }
+    },
+    "vulkan-headers"
   ],
   "features": {
     "target-aarch64": {

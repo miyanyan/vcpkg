@@ -12,7 +12,7 @@ vcpkg_check_features(
     OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
         arb WITH_ARB
-        flint WITH_FLINT 
+        flint WITH_FLINT
         mpfr WITH_MPFR
         tcmalloc WITH_TCMALLOC
         llvm WITH_LLVM
