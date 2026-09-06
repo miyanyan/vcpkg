@@ -49,6 +49,7 @@
         "tools"
       ]
     },
+    "spirv-headers",
     {
       "name": "vcpkg-cmake",
       "host": true

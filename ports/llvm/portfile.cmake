@@ -205,6 +205,13 @@ if("compiler-rt" IN_LIST FEATURES)
         FEATURES
             enable-ios COMPILER_RT_ENABLE_IOS
     )
+    if(VCPKG_TARGET_IS_ANDROID)
+        # Android NDK triplets build one target architecture. Avoid compiler-rt
+        # probing and generating additional multilib runtimes for that target.
+        list(APPEND COMPILER_RT_FEATURE_OPTIONS
+            -DCOMPILER_RT_DEFAULT_TARGET_ONLY=ON
+        )
+    endif()
 endif()
 if("openmp" IN_LIST FEATURES)
     list(APPEND LLVM_ENABLE_RUNTIMES "openmp")
@@ -322,6 +329,15 @@ endif()
 # At least one target must be specified, otherwise default to "all".
 if("${LLVM_TARGETS_TO_BUILD}" STREQUAL "")
     set(LLVM_TARGETS_TO_BUILD "all")
+endif()
+
+if(VCPKG_TARGET_IS_LINUX AND VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
+    # Large Debug links can exceed the range of AArch64 CALL26 relocations when
+    # every LLVM component is linked statically into tools and liblldb.
+    list(APPEND FEATURE_OPTIONS
+        -DLLVM_BUILD_LLVM_DYLIB=ON
+        -DLLVM_LINK_LLVM_DYLIB=ON
+    )
 endif()
 
 vcpkg_cmake_configure(

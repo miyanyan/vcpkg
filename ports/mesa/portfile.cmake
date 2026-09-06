@@ -112,7 +112,10 @@ if(VCPKG_TARGET_IS_WINDOWS)
         set(VCPKG_C_FLAGS "/D_CRT_DECLARE_NONSTDC_NAMES ${VCPKG_C_FLAGS}")
     endif()
 elseif(VCPKG_TARGET_IS_ANDROID)
-    list(APPEND MESA_OPTIONS -Dplatforms=['android'])
+    list(APPEND MESA_OPTIONS
+        -Dplatforms=['android']
+        -Dandroid-stub=true
+    )
 endif()
 
 vcpkg_configure_meson(
