@@ -112,6 +112,13 @@ if(VCPKG_TARGET_IS_WINDOWS)
         set(VCPKG_C_FLAGS "/D_CRT_DECLARE_NONSTDC_NAMES ${VCPKG_C_FLAGS}")
     endif()
 elseif(VCPKG_TARGET_IS_ANDROID)
+    # Do not let target dependency detection fall back to the build machine's
+    # system pkg-config directories while cross-compiling.
+    set(MESA_EMPTY_PKG_CONFIG_DIR "${CURRENT_BUILDTREES_DIR}/empty-pkgconfig")
+    file(MAKE_DIRECTORY "${MESA_EMPTY_PKG_CONFIG_DIR}")
+    list(APPEND MESA_ADDITIONAL_PROPERTIES
+        "pkg_config_libdir = ['${MESA_EMPTY_PKG_CONFIG_DIR}']"
+    )
     list(APPEND MESA_OPTIONS
         -Dplatforms=['android']
         -Dandroid-stub=true
@@ -133,6 +140,8 @@ vcpkg_configure_meson(
         python=['${PYTHON3}','-I']
         python3=['${PYTHON3}','-I']
         ${MESA_ADDITIONAL_BINARIES}
+    ADDITIONAL_PROPERTIES
+        ${MESA_ADDITIONAL_PROPERTIES}
 )
 vcpkg_install_meson()
 vcpkg_fixup_pkgconfig()
