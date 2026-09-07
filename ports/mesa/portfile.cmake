@@ -115,6 +115,7 @@ elseif(VCPKG_TARGET_IS_ANDROID)
     list(APPEND MESA_OPTIONS
         -Dplatforms=['android']
         -Dandroid-stub=true
+        -Dgallium-drivers=['swrast']
     )
 endif()
 
