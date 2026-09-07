@@ -157,9 +157,11 @@ if("mlir" IN_LIST FEATURES)
         -DMLIR_INSTALL_AGGREGATE_OBJECTS=OFF # Disables installation of object files in lib/objects-{CMAKE_BUILD_TYPE}.
     )
     if("enable-mlir-python-bindings" IN_LIST FEATURES)
-        list(APPEND FEATURE_OPTIONS
+        list(APPEND MLIR_PYTHON_OPTIONS_DEBUG
+            -DMLIR_ENABLE_BINDINGS_PYTHON=OFF
+        )
+        list(APPEND MLIR_PYTHON_OPTIONS_RELEASE
             -DMLIR_ENABLE_BINDINGS_PYTHON=ON
-            "-Dpybind11_DIR=${CURRENT_INSTALLED_DIR}/share/pybind11"
         )
     endif()
 endif()
@@ -306,11 +308,24 @@ foreach(llvm_target IN LISTS known_llvm_experimental_targets)
 endforeach()
 
 vcpkg_find_acquire_program(PYTHON3)
+set(python_packages)
 if("libc" IN_LIST FEATURES)
+    list(APPEND python_packages pyyaml)
+endif()
+if("enable-mlir-python-bindings" IN_LIST FEATURES)
+    if(VCPKG_HOST_IS_WINDOWS)
+        set(PYTHON3 "${CURRENT_HOST_INSTALLED_DIR}/tools/python3/python.exe")
+    else()
+        set(PYTHON3 "${CURRENT_HOST_INSTALLED_DIR}/tools/python3/python3")
+    endif()
+    # Keep this in sync with mlir/python/requirements.txt.
+    list(APPEND python_packages "nanobind>=2.9,<3.0")
+endif()
+if(python_packages)
     x_vcpkg_get_python_packages(
         PYTHON_EXECUTABLE "${PYTHON3}"
         OUT_PYTHON_VAR PYTHON3
-        PACKAGES pyyaml
+        PACKAGES ${python_packages}
     )
 endif()
 get_filename_component(PYTHON3_DIR ${PYTHON3} DIRECTORY)
@@ -356,6 +371,7 @@ vcpkg_cmake_configure(
         -DLLVM_PARALLEL_LINK_JOBS=1
         -DLLVM_INSTALL_PACKAGE_DIR:PATH=share/llvm
         -DLLVM_TOOLS_INSTALL_DIR:PATH=tools/llvm
+        "-DPython_EXECUTABLE=${PYTHON3}"
         "-DPython3_EXECUTABLE=${PYTHON3}"
         "-DLLVM_ENABLE_PROJECTS=${LLVM_ENABLE_PROJECTS}"
         "-DLLVM_ENABLE_RUNTIMES=${LLVM_ENABLE_RUNTIMES}"
@@ -365,6 +381,10 @@ vcpkg_cmake_configure(
         ${FEATURE_OPTIONS}
         ${CLANG_FEATURE_OPTIONS}
         ${COMPILER_RT_FEATURE_OPTIONS}
+    OPTIONS_DEBUG
+        ${MLIR_PYTHON_OPTIONS_DEBUG}
+    OPTIONS_RELEASE
+        ${MLIR_PYTHON_OPTIONS_RELEASE}
 )
 
 vcpkg_cmake_install(ADD_BIN_TO_PATH)

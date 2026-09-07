@@ -180,8 +180,11 @@
             "mlir"
           ]
         },
-        "pybind11",
-        "python3"
+        "python3",
+        {
+          "name": "vcpkg-get-python-packages",
+          "host": true
+        }
       ]
     },
     "enable-rtti": {
