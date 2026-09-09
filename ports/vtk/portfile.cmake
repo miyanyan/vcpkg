@@ -22,7 +22,6 @@ vcpkg_from_github(
         mysql.diff
         pegtl.patch
         pythonwrapper.patch # Required by ParaView to Wrap required classes
-        python313-mpi4py.patch
         NoUndefDebug.patch # Required to link against correct Python library depending on build type.
         fix-using-hdf5.patch
         # CHECK: module-name-mangling.patch
@@ -53,6 +52,19 @@ vcpkg_from_github(
         avoid-stdext.diff
         fix-fmt-header.patch
 )
+
+if("python" IN_LIST FEATURES)
+    # VTK's mpi4py import includes generated C sources and the MS-MPI build fix.
+    # This is the subtree merged by VTK commit fbdd9a63, not the full VTK source.
+    vcpkg_from_github(
+        OUT_SOURCE_PATH MPI4PY_SOURCE_PATH
+        REPO Kitware/VTK
+        REF 1ac079e59e2577238aba615ce5a1c2dbce8f1f47 # mpi4py 4.0.1, for/vtk-20241113-4.0.1
+        SHA512 fc3953024393bde5da0700be30d1b3dc5b2b575d7f4da2d8622ccdf689460be5d2877cfe8458115946c6a401394a0a439e15359b36ccd58fa9ea9f18af937dbf
+    )
+    file(REMOVE_RECURSE "${SOURCE_PATH}/ThirdParty/mpi4py/vtkmpi4py")
+    file(COPY "${MPI4PY_SOURCE_PATH}/" DESTINATION "${SOURCE_PATH}/ThirdParty/mpi4py/vtkmpi4py")
+endif()
 
 # =============================================================================
 # Overwrite outdated modules if they have not been patched:
