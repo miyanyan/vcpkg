@@ -1,0 +1,148 @@
+Adapt the bundled Cython 0.29.36 output to CPython 3.13.
+Use the existing fallbacks for hidden interpreter/dictionary APIs, and
+request exceptions with the new _PyLong_AsByteArray argument.
+
+diff --git a/ThirdParty/mpi4py/vtkmpi4py/src/mpi4py.MPI.c b/ThirdParty/mpi4py/vtkmpi4py/src/mpi4py.MPI.c
+index 9addb5c..50ed5fe 100644
+--- a/ThirdParty/mpi4py/vtkmpi4py/src/mpi4py.MPI.c
++++ b/ThirdParty/mpi4py/vtkmpi4py/src/mpi4py.MPI.c
+@@ -551,7 +551,7 @@ static CYTHON_INLINE void * PyThread_tss_get(Py_tss_t *key) {
+   #define __Pyx_PyNumber_Divide(x,y)         PyNumber_Divide(x,y)
+   #define __Pyx_PyNumber_InPlaceDivide(x,y)  PyNumber_InPlaceDivide(x,y)
+ #endif
+-#if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030500A1 && CYTHON_USE_UNICODE_INTERNALS
++#if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030500A1 && PY_VERSION_HEX < 0x030D0000 && CYTHON_USE_UNICODE_INTERNALS
+ #define __Pyx_PyDict_GetItemStr(dict, name)  _PyDict_GetItem_KnownHash(dict, name, ((PyASCIIObject *) name)->hash)
+ #else
+ #define __Pyx_PyDict_GetItemStr(dict, name)  PyDict_GetItem(dict, name)
+@@ -2309,7 +2309,7 @@ static int __Pyx__ArgTypeTest(PyObject *obj, PyTypeObject *type, const char *nam
+   #define __pyx_assertions_enabled() (1)
+ #elif PY_VERSION_HEX < 0x03080000  ||  CYTHON_COMPILING_IN_PYPY  ||  defined(Py_LIMITED_API)
+   #define __pyx_assertions_enabled() (!Py_OptimizeFlag)
+-#elif CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030900A6
++#elif CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030900A6 && PY_VERSION_HEX < 0x030D0000
+   static int __pyx_assertions_enabled_flag;
+   #define __pyx_assertions_enabled() (__pyx_assertions_enabled_flag)
+   #undef __Pyx_init_assertions_enabled
+@@ -2596,7 +2596,7 @@ static PyObject *__Pyx_CyFunction_New(PyMethodDef *ml,
+                                       PyObject* code);
+ 
+ /* SetNameInClass.proto */
+-#if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030500A1
++#if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030500A1 && PY_VERSION_HEX < 0x030D0000
+ #define __Pyx_SetNameInClass(ns, name, value)\
+     (likely(PyDict_CheckExact(ns)) ? _PyDict_SetItem_KnownHash(ns, name, value, ((PyASCIIObject *) name)->hash) : PyObject_SetItem(ns, name, value))
+ #elif CYTHON_COMPILING_IN_CPYTHON
+@@ -191748,7 +191748,7 @@ static CYTHON_INLINE PyObject *__Pyx__GetModuleGlobalName(PyObject *name)
+ {
+     PyObject *result;
+ #if !CYTHON_AVOID_BORROWED_REFS
+-#if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030500A1
++#if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030500A1 && PY_VERSION_HEX < 0x030D0000
+     result = _PyDict_GetItem_KnownHash(__pyx_d, name, ((PyASCIIObject *) name)->hash);
+     __PYX_UPDATE_DICT_CACHE(__pyx_d, result, *dict_cached_value, *dict_version)
+     if (likely(result)) {
+@@ -193592,7 +193592,11 @@ static CYTHON_INLINE MPI_Aint __Pyx_PyInt_As_MPI_Aint(PyObject *x) {
+                 unsigned char *bytes = (unsigned char *)&val;
+                 int ret = _PyLong_AsByteArray((PyLongObject *)v,
+                                               bytes, sizeof(val),
+-                                              is_little, !is_unsigned);
++                                              is_little, !is_unsigned
++#if PY_VERSION_HEX >= 0x030D0000
++                                              , 1
++#endif
++                                              );
+                 Py_DECREF(v);
+                 if (likely(!ret))
+                     return val;
+@@ -193788,7 +193792,11 @@ static CYTHON_INLINE int __Pyx_PyInt_As_int(PyObject *x) {
+                 unsigned char *bytes = (unsigned char *)&val;
+                 int ret = _PyLong_AsByteArray((PyLongObject *)v,
+                                               bytes, sizeof(val),
+-                                              is_little, !is_unsigned);
++                                              is_little, !is_unsigned
++#if PY_VERSION_HEX >= 0x030D0000
++                                              , 1
++#endif
++                                              );
+                 Py_DECREF(v);
+                 if (likely(!ret))
+                     return val;
+@@ -194060,7 +194068,11 @@ static CYTHON_INLINE MPI_Count __Pyx_PyInt_As_MPI_Count(PyObject *x) {
+                 unsigned char *bytes = (unsigned char *)&val;
+                 int ret = _PyLong_AsByteArray((PyLongObject *)v,
+                                               bytes, sizeof(val),
+-                                              is_little, !is_unsigned);
++                                              is_little, !is_unsigned
++#if PY_VERSION_HEX >= 0x030D0000
++                                              , 1
++#endif
++                                              );
+                 Py_DECREF(v);
+                 if (likely(!ret))
+                     return val;
+@@ -194256,7 +194268,11 @@ static CYTHON_INLINE MPI_Offset __Pyx_PyInt_As_MPI_Offset(PyObject *x) {
+                 unsigned char *bytes = (unsigned char *)&val;
+                 int ret = _PyLong_AsByteArray((PyLongObject *)v,
+                                               bytes, sizeof(val),
+-                                              is_little, !is_unsigned);
++                                              is_little, !is_unsigned
++#if PY_VERSION_HEX >= 0x030D0000
++                                              , 1
++#endif
++                                              );
+                 Py_DECREF(v);
+                 if (likely(!ret))
+                     return val;
+@@ -194490,7 +194506,11 @@ static CYTHON_INLINE unsigned int __Pyx_PyInt_As_unsigned_int(PyObject *x) {
+                 unsigned char *bytes = (unsigned char *)&val;
+                 int ret = _PyLong_AsByteArray((PyLongObject *)v,
+                                               bytes, sizeof(val),
+-                                              is_little, !is_unsigned);
++                                              is_little, !is_unsigned
++#if PY_VERSION_HEX >= 0x030D0000
++                                              , 1
++#endif
++                                              );
+                 Py_DECREF(v);
+                 if (likely(!ret))
+                     return val;
+@@ -194686,7 +194706,11 @@ static CYTHON_INLINE unsigned char __Pyx_PyInt_As_unsigned_char(PyObject *x) {
+                 unsigned char *bytes = (unsigned char *)&val;
+                 int ret = _PyLong_AsByteArray((PyLongObject *)v,
+                                               bytes, sizeof(val),
+-                                              is_little, !is_unsigned);
++                                              is_little, !is_unsigned
++#if PY_VERSION_HEX >= 0x030D0000
++                                              , 1
++#endif
++                                              );
+                 Py_DECREF(v);
+                 if (likely(!ret))
+                     return val;
+@@ -194996,7 +195020,11 @@ static CYTHON_INLINE MPI_Fint __Pyx_PyInt_As_MPI_Fint(PyObject *x) {
+                 unsigned char *bytes = (unsigned char *)&val;
+                 int ret = _PyLong_AsByteArray((PyLongObject *)v,
+                                               bytes, sizeof(val),
+-                                              is_little, !is_unsigned);
++                                              is_little, !is_unsigned
++#if PY_VERSION_HEX >= 0x030D0000
++                                              , 1
++#endif
++                                              );
+                 Py_DECREF(v);
+                 if (likely(!ret))
+                     return val;
+@@ -195192,7 +195220,11 @@ static CYTHON_INLINE long __Pyx_PyInt_As_long(PyObject *x) {
+                 unsigned char *bytes = (unsigned char *)&val;
+                 int ret = _PyLong_AsByteArray((PyLongObject *)v,
+                                               bytes, sizeof(val),
+-                                              is_little, !is_unsigned);
++                                              is_little, !is_unsigned
++#if PY_VERSION_HEX >= 0x030D0000
++                                              , 1
++#endif
++                                              );
+                 Py_DECREF(v);
+                 if (likely(!ret))
+                     return val;

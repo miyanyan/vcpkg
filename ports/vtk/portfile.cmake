@@ -22,6 +22,7 @@ vcpkg_from_github(
         mysql.diff
         pegtl.patch
         pythonwrapper.patch # Required by ParaView to Wrap required classes
+        python313-mpi4py.patch
         NoUndefDebug.patch # Required to link against correct Python library depending on build type.
         fix-using-hdf5.patch
         # CHECK: module-name-mangling.patch
