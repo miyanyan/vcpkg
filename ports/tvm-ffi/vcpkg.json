@@ -4,6 +4,7 @@
   "description": "Open ABI and FFI for machine learning systems",
   "homepage": "https://github.com/apache/tvm-ffi",
   "license": "Apache-2.0",
+  "supports": "!uwp",
   "dependencies": [
     "dlpack",
     {
