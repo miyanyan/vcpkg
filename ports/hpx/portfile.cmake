@@ -3,21 +3,12 @@ if(VCPKG_TARGET_IS_WINDOWS)
 endif()
 string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "static" HPX_WITH_STATIC_LINKING)
 
-vcpkg_download_distfile(ASIO_1_34_PATCH
-    URLS https://github.com/STEllAR-GROUP/hpx/commit/f073c54f9c69108707dc477c890592049fcd95db.patch?full_index=1
-    FILENAME STEllAR-GROUP-hpx-f073c54f9c69108707dc477c890592049fcd95db.patch
-    SHA512 f7c0020d13e1a9fc67ca70488c0bd4b06449a9013be972d6c2d0d2fdb42b6a646176440acbb13c04441461c2a5251da75384112102fe4308a40f11313c02e4b7
-)
-
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
-    REPO STEllAR-GROUP/hpx
+    REPO TheHPXProject/hpx
     REF "v${VERSION}"
-    SHA512 bf22add7a97087f68bd49fe0ae5b2bfbd7ba01d4018872c3934ebd81a632e2559e6144c5aa06779db971c642d5a41b16c8c48108af2c4069be6d9f9b72985182
+    SHA512 28fdd63afbc6bf5f66af3860f415b6204ade31bb8c075a37e9303db47816f53b72f86db2ef1404b92a77b71da0559f044589ead4dcd366a016a2e07a7922b93a
     HEAD_REF master
-    PATCHES
-        "${ASIO_1_34_PATCH}"
-        fix-asio-resolver.patch # https://github.com/TheHPXProject/hpx/pull/7816
 )
 
 vcpkg_check_features(
@@ -41,6 +32,8 @@ vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
     OPTIONS
         -DHPX_WITH_VCPKG=ON
+        -DHPX_WITH_FETCH_STDEXEC=OFF
+        -DHPX_WITH_DEBUG_POSTFIX=
         -DHPX_WITH_TESTS=OFF
         -DHPX_WITH_EXAMPLES=OFF
         -DHPX_WITH_TOOLS=OFF
@@ -95,9 +88,15 @@ vcpkg_fixup_pkgconfig()
 
 file(REMOVE "${CURRENT_PACKAGES_DIR}/bin/hpxcxx" "${CURRENT_PACKAGES_DIR}/debug/bin/hpxcxx")
 
-if(EXISTS "${CURRENT_PACKAGES_DIR}/bin/hpxrun.py")
-    file(MAKE_DIRECTORY "${CURRENT_PACKAGES_DIR}/tools/${PORT}")
-    file(RENAME "${CURRENT_PACKAGES_DIR}/bin/hpxrun.py" "${CURRENT_PACKAGES_DIR}/tools/${PORT}/hpxrun.py")
+foreach(script IN ITEMS hpxrun.py hpx-top.py hpx_stat_viewer.py)
+    if(EXISTS "${CURRENT_PACKAGES_DIR}/bin/${script}")
+        file(MAKE_DIRECTORY "${CURRENT_PACKAGES_DIR}/tools/${PORT}")
+        file(RENAME "${CURRENT_PACKAGES_DIR}/bin/${script}" "${CURRENT_PACKAGES_DIR}/tools/${PORT}/${script}")
+    endif()
+    file(REMOVE "${CURRENT_PACKAGES_DIR}/debug/bin/${script}")
+endforeach()
+
+if(EXISTS "${CURRENT_PACKAGES_DIR}/tools/${PORT}/hpxrun.py")
     vcpkg_replace_string("${CURRENT_PACKAGES_DIR}/tools/${PORT}/hpxrun.py" "'${CURRENT_INSTALLED_DIR}/tools/openmpi/bin/mpiexec'" "'mpiexec'" IGNORE_UNCHANGED)
 endif()
 
