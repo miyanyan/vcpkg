@@ -8,6 +8,7 @@ vcpkg_from_github(
         cmake-config.diff
         pkgconfig.diff
         unvendor.diff
+        fix-msvc-x86-ctz64.diff
 )
 file(REMOVE_RECURSE "${SOURCE_PATH}/ggml/include" "${SOURCE_PATH}/ggml/src")
 file(REMOVE_RECURSE
